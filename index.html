@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Cotización - La Quincalla de Mauriel</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.autotable.min.js"></script>
+
+    <style>
+        /* Estilos CSS */
+        :root{--azul:#007bff;--gris:#f4f7f6;--border-color:#ccc}
+        body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--gris);margin:0;padding:20px;color:#333}
+        
+        .controles{background:#fff;padding:14px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.05);text-align:center;margin-bottom:18px}
+        .btn{background:var(--azul);color:#fff;padding:10px 18px;border:0;border-radius:6px;cursor:pointer;margin:0 6px}
+        .btn-secundario{background:#28a745}
+        .btn-peligro{background:#dc3545;padding:6px 8px;border-radius:6px;font-size:12px}
+
+        .cotizacion-container{width:8.5in;min-height:11in;margin:0 auto;background:#fff;border:1px solid #e6e6e6;padding:36px 44px;box-shadow:0 0 15px rgba(0,0,0,.08);position:relative;box-sizing:border-box}
+        
+        /* Diseño para pantalla */
+        .header table{width:100%}
+        /* Logo placeholder */
+        .logo-placeholder{width:180px; height:50px; display:block; background-color: #f0f0f0; border: 1px dashed #ccc;}
+
+        .empresa-info{text-align:right}
+        .header h1{color:var(--azul);margin:0 0 6px;font-size:26px}
+
+        .info-section{display:flex;gap:30px;margin-top:24px}
+        .info-section > div{flex:1; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px;} 
+        .info-section h3{margin-top:0; border-bottom: 2px solid var(--azul); padding-bottom: 4px; font-size: 16px; margin-bottom: 12px;}
+        
+        .info-item{display:flex;align-items:center;margin-bottom:6px; font-size: 13px;}
+        .info-item label{width:100px;font-weight:600;margin-right:8px}
+        .info-section .cot-data label {width: auto; min-width: 80px;} 
+        .info-section .cot-data .info-item {justify-content: flex-end;} 
+        .info-item input,.info-item textarea{flex:1;padding:4px 6px;border:1px solid #e6e6e6;border-radius:4px;font-size:13px}
+        .info-item textarea{min-height:50px}
+        
+        table#tabla-items{width:100%;margin-top:24px;border-collapse:collapse; font-size: 13px;}
+        #tabla-items th,#tabla-items td{border:1px solid #e6e6e6;padding:8px;text-align:left} 
+        #tabla-items th{background:#f0f0f0; font-size: 14px;}
+        #tabla-items input{width:100%;box-sizing:border-box;padding:4px;border:1px solid #ccd; font-size: 13px;} 
+        .total-fila{font-weight:700;text-align:right}
+        
+        .totales{float:right;width:300px;margin-top:20px; font-size: 14px;}
+        .totales-item{display:flex;justify-content:space-between;padding:6px 0}
+        .totales-item.total-general{border-top:2px solid #333;padding-top:10px;color:var(--azul);font-size:18px}
+        
+        .firmas{clear:both;margin-top:120px;display:flex;justify-content:space-between;text-align:center;color:#555; font-size: 14px;} 
+        .firmas div{width:45%}
+        .firmas span{display:block;border-top:1px solid #999;margin-bottom:6px;padding-top:6px}
+        
+        .footer{clear:both;padding-top:36px;border-top:1px solid #eee;text-align:center;color:#777;font-size:11px}
+        
+        @media print{.controles{display:none}.cotizacion-container{box-shadow:none;border:none}}
+    </style>
+</head>
+<body>
+    <div class="controles">
+        <button id="btnAgregar" class="btn btn-secundario" type="button">+ Agregar Fila</button>
+        <button id="btnDescargar" class="btn" type="button">Descargar PDF</button>
+    </div>
+
+    <div id="cotizacionParaPDF" class="cotizacion-container">
+        <header class="header">
+            <table>
+                <tr>
+                    <td style="width:200px;vertical-align:top;"><div class="logo-placeholder"></div></td>
+                    <td style="vertical-align:top;">
+                        <div class="empresa-info">
+                            <h1>COTIZACIÓN</h1>
+                            <p><strong>LA QUINCALLA DE MAURIEL, C.A.</strong><br>
+                               RIF: J-505792989<br>
+                               Sta Teresa del Tuy, Independencia, Miranda.<br>
+                               Teléfono: +58 0414-2738221<br>
+                               Email: laquincalledemauriel@gmail.com
+                            </p>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </header>
+
+        <section class="info-section">
+            <div>
+                <h3>CLIENTE</h3>
+                <div class="info-item"><label>Nombres:</label><input id="cliente-nombre" type="text" placeholder="Nombre del Cliente"></div>
+                <div class="info-item"><label>RIF/CI:</label><input id="cliente-id" type="text" placeholder="RIF o Cédula"></div>
+                <div class="info-item"><label>Teléfono:</label><input id="cliente-tel" type="text" placeholder="Teléfono"></div>
+                <div class="info-item"><label>Dirección:</label><textarea id="cliente-dir" placeholder="Dirección"></textarea></div>
+            </div>
+            <div class="cot-data">
+                <h3>COTIZACIÓN</h3>
+                <div class="info-item"><label>Número:</label><input id="cotizacion-numero" type="text" value="COT-2025-001"></div>
+                <div class="info-item"><label>Fecha:</label><input id="fecha-hoy" type="date"></div>
+                <div class="info-item"><label>Validez:</label><input id="validez" type="text" value="15 Días"></div>
+            </div>
+        </section>
+
+        <section class="tabla-container">
+            <table id="tabla-items">
+                <thead>
+                    <tr>
+                        <th style="width:10%">CANT.</th>
+                        <th style="width:52%">DESCRIPCIÓN</th>
+                        <th style="width:14%">P. UNITARIO ($)</th>
+                        <th style="width:14%">TOTAL ($)</th>
+                        <th style="width:10%"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><input class="cantidad" type="number" value="1" min="0" step="1"></td>
+                        <td><input class="descripcion" type="text" placeholder="Describe el producto o servicio"></td>
+                        <td><input class="precio" type="number" value="0.00" step="0.01" min="0"></td>
+                        <td class="total-fila">0.00</td>
+                        <td style="text-align:center"><button class="btn-peligro" type="button">X</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section class="totales">
+            <div class="totales-item"><label>Subtotal:</label><span id="subtotal">0.00</span></div>
+            <div class="totales-item"><label>IVA (<input id="iva-porc" type="number" value="16" min="0" style="width:60px">%):</label><span id="iva-monto">0.00</span></div>
+            <div class="totales-item total-general"><label>TOTAL ($):</label><span id="total-general">0.00</span></div>
+        </section>
+
+        <div class="firmas">
+            <div><span></span>De Recibido por el Cliente</div>
+            <div><span></span>Firma y Sello de la Empresa</div>
+        </div>
+
+        <footer class="footer">
+            <p><strong>GRACIAS POR SU CONFIANZA</strong></p>
+            <p>Términos: Pago 50% adelantado, 50% contra entrega (personalízalo)</p>
+        </footer>
+    </div>
+
+    <script>
+        // Inicialización
+        const jsPDF = window.jspdf.jsPDF; 
+
+        document.getElementById('fecha-hoy').valueAsDate = new Date();
+        const $tablaBody = document.querySelector('#tabla-items tbody');
+        const btnAgregar = document.getElementById('btnAgregar');
+        const btnDescargar = document.getElementById('btnDescargar');
+        const ivaPorcInput = document.getElementById('iva-porc');
+
+        // --- Lógica de la interfaz (cálculos y botones) ---
+
+        $tablaBody.addEventListener('click', e => {
+            if (e.target.matches('.btn-peligro')) {
+                e.target.closest('tr').remove();
+                calcularTotales();
+            }
+        });
+        $tablaBody.addEventListener('input', e => {
+            if (e.target.matches('.cantidad') || e.target.matches('.precio')) calcularTotales();
+        });
+        ivaPorcInput.addEventListener('input', calcularTotales);
+
+        btnAgregar.addEventListener('click', () => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><input class="cantidad" type="number" value="1" min="0" step="1"></td>
+                <td><input class="descripcion" type="text" placeholder="Describe el producto o servicio"></td>
+                <td><input class="precio" type="number" value="0.00" step="0.01" min="0"></td>
+                <td class="total-fila">0.00</td>
+                <td style="text-align:center"><button class="btn-peligro" type="button">X</button></td>
+            `;
+            $tablaBody.appendChild(tr);
+            calcularTotales();
+        });
+
+        function calcularTotales() {
+            let subtotal = 0;
+            document.querySelectorAll('#tabla-items tbody tr').forEach(fila => {
+                const cantidad = parseFloat(fila.querySelector('.cantidad').value) || 0;
+                const precio = parseFloat(fila.querySelector('.precio').value) || 0;
+                const totalFila = cantidad * precio;
+                fila.querySelector('.total-fila').textContent = totalFila.toFixed(2);
+                subtotal += totalFila;
+            });
+            const ivaPorc = parseFloat(document.getElementById('iva-porc').value) || 0;
+            const ivaMonto = subtotal * (ivaPorc / 100);
+            const total = subtotal + ivaMonto;
+            document.getElementById('subtotal').textContent = subtotal.toFixed(2);
+            document.getElementById('iva-monto').textContent = ivaMonto.toFixed(2);
+            document.getElementById('total-general').textContent = total.toFixed(2);
+        }
+
+
+        // --- Lógica de Generación de PDF (Vectorial con jsPDF) ---
+
+        async function descargarPDF() {
+            btnDescargar.disabled = true;
+            btnDescargar.textContent = 'Generando PDF...';
+
+            try {
+                // 🛑 INSTANCIA DE jsPDF
+                const doc = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'pt', 
+                    format: 'letter' 
+                });
+
+                const pageHeight = doc.internal.pageSize.height;
+                const pageWidth = doc.internal.pageSize.width;
+                const margin = 36; 
+                const contentWidth = pageWidth - 2 * margin; 
+                let y = margin; 
+
+                const primaryColor = '#007bff';
+                const textColor = '#333333';
+                const grayColor = '#f0f0f0';
+                
+                // 2. Info de la Empresa y Título de Cotización
+                doc.setFontSize(24);
+                doc.setTextColor(primaryColor);
+                doc.setFont('helvetica', 'bold');
+                doc.text("COTIZACIÓN", pageWidth - margin, y + 5, { align: 'right' }); 
+
+                doc.setFontSize(10);
+                doc.setTextColor(textColor);
+                doc.setFont('helvetica', 'normal');
+                doc.text("LA QUINCALLA DE MAURIEL, C.A.", pageWidth - margin, y + 25, { align: 'right' });
+                doc.text("RIF: J-505792989", pageWidth - margin, y + 37, { align: 'right' });
+                doc.text("Sta Teresa del Tuy, Independencia, Miranda.", pageWidth - margin, y + 49, { align: 'right' });
+                doc.text("Teléfono: +58 0414-2738221", pageWidth - margin, y + 61, { align: 'right' });
+                doc.text("Email: laquincalledemauriel@gmail.com", pageWidth - margin, y + 73, { align: 'right' });
+                
+                y += 90; 
+
+                // Línea divisoria
+                doc.setDrawColor(primaryColor);
+                doc.setLineWidth(2);
+                doc.line(margin, y, pageWidth - margin, y);
+                y += 20;
+
+                // 4. Sección Cliente / Cotización
+                doc.setFontSize(12);
+                doc.setFont('helvetica', 'bold');
+                doc.text("CLIENTE", margin, y);
+                doc.text("COTIZACIÓN", pageWidth / 2 + 10, y); 
+
+                y += 15;
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'normal');
+
+                const clienteNombre = document.getElementById('cliente-nombre').value || "Nombre del Cliente";
+                const clienteId = document.getElementById('cliente-id').value || "RIF o Cédula";
+                const clienteTel = document.getElementById('cliente-tel').value || "Teléfono";
+                const clienteDir = document.getElementById('cliente-dir').value || "Dirección";
+
+                const cotizacionNumero = document.getElementById('cotizacion-numero').value;
+                const fechaHoy = document.getElementById('fecha-hoy').value;
+                const validez = document.getElementById('validez').value;
+                
+                // Columna Cliente
+                doc.text("Nombres:", margin, y);
+                doc.text(clienteNombre, margin + 70, y);
+                y += 15;
+                doc.text("RIF/CI:", margin, y);
+                doc.text(clienteId, margin + 70, y);
+                y += 15;
+                doc.text("Teléfono:", margin, y);
+                doc.text(clienteTel, margin + 70, y);
+                y += 15;
+                doc.text("Dirección:", margin, y);
+                doc.text(clienteDir, margin + 70, y); 
+
+                // Columna Cotización (Alineada a la derecha)
+                let yCot = margin + 115; 
+                const cotLabelX = pageWidth / 2 + 10;
+                const cotValueX = pageWidth - margin;
+
+                doc.text("Número:", cotLabelX, yCot);
+                doc.text(cotizacionNumero, cotValueX, yCot, { align: 'right' }); 
+                yCot += 15;
+                doc.text("Fecha:", cotLabelX, yCot);
+                doc.text(fechaHoy, cotValueX, yCot, { align: 'right' }); 
+                yCot += 15;
+                doc.text("Validez:", cotLabelX, yCot);
+                doc.text(validez, cotValueX, yCot, { align: 'right' }); 
+                
+                y = y > yCot ? y : yCot; 
+                y += 40; 
+
+
+                // 5. Tabla de Productos (usando jsPDF-AutoTable)
+                const tableHeaders = [
+                    { header: 'CANT.', dataKey: 'cantidad' },
+                    { header: 'DESCRIPCIÓN', dataKey: 'descripcion' },
+                    { header: 'P. UNITARIO ($)', dataKey: 'precio' },
+                    { header: 'TOTAL ($)', dataKey: 'total' }
+                ];
+
+                const tableRows = [];
+                document.querySelectorAll('#tabla-items tbody tr').forEach(fila => {
+                    const cantidad = parseFloat(fila.querySelector('.cantidad').value) || 0;
+                    const descripcion = fila.querySelector('.descripcion').value || '';
+                    const precio = parseFloat(fila.querySelector('.precio').value) || 0;
+                    const totalFila = (cantidad * precio).toFixed(2);
+                    tableRows.push({
+                        cantidad: cantidad,
+                        descripcion: descripcion,
+                        precio: precio.toFixed(2),
+                        total: totalFila
+                    });
+                });
+
+                doc.autoTable({
+                    startY: y,
+                    head: [tableHeaders.map(h => h.header)],
+                    body: tableRows.map(row => tableHeaders.map(h => row[h.dataKey])),
+                    theme: 'striped', 
+                    headStyles: { fillColor: grayColor, textColor: textColor, fontStyle: 'bold', fontSize: 10, halign: 'left' },
+                    bodyStyles: { fontSize: 9, textColor: textColor, halign: 'left' },
+                    columnStyles: {
+                        'cantidad': { cellWidth: 40, halign: 'center' },
+                        'descripcion': { cellWidth: 'auto' }, 
+                        'precio': { cellWidth: 70, halign: 'right' },
+                        'total': { cellWidth: 70, halign: 'right' }
+                    },
+                    margin: { left: margin, right: margin }
+                });
+
+                y = doc.autoTable.previous.finalY + 20; 
+
+
+                // 6. Totales
+                const subtotal = parseFloat(document.getElementById('subtotal').textContent) || 0;
+                const ivaPorc = parseFloat(document.getElementById('iva-porc').value) || 0;
+                const ivaMonto = parseFloat(document.getElementById('iva-monto').textContent) || 0;
+                const totalGeneral = parseFloat(document.getElementById('total-general').textContent) || 0;
+
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'normal');
+                const totalesX = pageWidth - margin - 150; 
+                
+                doc.text("Subtotal:", totalesX, y);
+                doc.text(subtotal.toFixed(2), pageWidth - margin, y, { align: 'right' });
+                y += 15;
+                
+                doc.text(`IVA (${ivaPorc}%):`, totalesX, y);
+                doc.text(ivaMonto.toFixed(2), pageWidth - margin, y, { align: 'right' });
+                y += 20;
+                
+                doc.setDrawColor(textColor);
+                doc.setLineWidth(0.5);
+                doc.line(totalesX, y, pageWidth - margin, y); 
+                y += 15;
+
+                doc.setFontSize(14);
+                doc.setTextColor(primaryColor);
+                doc.setFont('helvetica', 'bold');
+                doc.text("TOTAL ($):", totalesX, y);
+                doc.text(totalGeneral.toFixed(2), pageWidth - margin, y, { align: 'right' });
+                y += 50;
+
+
+                // 7. Firmas
+                doc.setFontSize(10);
+                doc.setTextColor(textColor);
+                doc.setFont('helvetica', 'normal');
+                
+                const firmaX1 = margin + (contentWidth / 4);
+                const firmaX2 = pageWidth - margin - (contentWidth / 4);
+
+                doc.line(margin, y, firmaX1 - 20, y); 
+                doc.text("De Recibido por el Cliente", margin + ((firmaX1 - margin) / 2) - 20, y + 15, { align: 'center' }); 
+
+                doc.line(firmaX2 + 20, y, pageWidth - margin, y); 
+                doc.text("Firma y Sello de la Empresa", firmaX2 + 20 + ((pageWidth - margin - (firmaX2 + 20)) / 2), y + 15, { align: 'center' }); 
+                y += 50;
+
+                // 8. Footer
+                doc.setFontSize(8);
+                doc.setTextColor('#777777');
+                doc.text("GRACIAS POR SU CONFIANZA", pageWidth / 2, pageHeight - margin - 20, { align: 'center' });
+                doc.text("Términos: Pago 50% adelantado, 50% contra entrega (personalízalo)", pageWidth / 2, pageHeight - margin - 8, { align: 'center' });
+
+                // Guardar el PDF
+                const cotNum = (document.getElementById('cotizacion-numero')?.value || 'SinNumero').trim();
+                const cliente = (document.getElementById('cliente-nombre')?.value || 'Cliente').trim().replace(/\s+/g,'-');
+                const fileName = `Cotizacion-${cotNum}-${cliente}.pdf`;
+                
+                // Ejecución de la descarga
+                doc.save(fileName); 
+
+            } catch (error) {
+                // Muestra un error en la consola si la generación falla
+                console.error("Error al generar o descargar el PDF:", error);
+            } finally {
+                // Esto se ejecuta SIEMPRE (haya éxito o error)
+                btnDescargar.disabled = false;
+                btnDescargar.textContent = 'Descargar PDF';
+            }
+        }
+
+        btnDescargar.addEventListener('click', async () => {
+            calcularTotales();
+            await descargarPDF();
+        });
+
+        calcularTotales();
+    </script>
+</body>
+</html>
