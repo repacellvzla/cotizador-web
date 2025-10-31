@@ -22,8 +22,8 @@
         
         /* Diseño para pantalla */
         .header table{width:100%}
-        /* Logo placeholder */
-        .logo-placeholder{width:180px; height:50px; display:block; background-color: #f0f0f0; border: 1px dashed #ccc;}
+        /* Logo placeholder modificado para imagen */
+        #logo-web{max-width:180px; height:auto; display:block;}
 
         .empresa-info{text-align:right}
         .header h1{color:var(--azul);margin:0 0 6px;font-size:26px}
@@ -68,7 +68,9 @@
         <header class="header">
             <table>
                 <tr>
-                    <td style="width:200px;vertical-align:top;"><div class="logo-placeholder"></div></td>
+                    <td style="width:200px;vertical-align:top;">
+                        <img id="logo-web" src="logo tu quincalla.png" alt="Logo La Quincalla de Mauriel">
+                    </td>
                     <td style="vertical-align:top;">
                         <div class="empresa-info">
                             <h1>COTIZACIÓN</h1>
@@ -83,7 +85,6 @@
                 </tr>
             </table>
         </header>
-
         <section class="info-section">
             <div>
                 <h3>CLIENTE</h3>
@@ -142,8 +143,9 @@
 
     <script>
         // Inicialización
-        const jsPDF = window.jspdf.jsPDF; 
-
+        // 🛑 CORRECCIÓN: Usamos window.jspdf.jsPDF para compatibilidad con autotable
+        // No necesitamos reasignar a una constante jsPDF
+        
         document.getElementById('fecha-hoy').valueAsDate = new Date();
         const $tablaBody = document.querySelector('#tabla-items tbody');
         const btnAgregar = document.getElementById('btnAgregar');
@@ -201,8 +203,8 @@
             btnDescargar.textContent = 'Generando PDF...';
 
             try {
-                // 🛑 INSTANCIA DE jsPDF
-                const doc = new jsPDF({
+                // 🛑 CORRECCIÓN DEL ERROR DE autoTable: Instanciamos jsPDF directamente
+                const doc = new window.jspdf.jsPDF({
                     orientation: 'portrait',
                     unit: 'pt', 
                     format: 'letter' 
@@ -223,6 +225,16 @@
                 doc.setTextColor(primaryColor);
                 doc.setFont('helvetica', 'bold');
                 doc.text("COTIZACIÓN", pageWidth - margin, y + 5, { align: 'right' }); 
+                
+                // 🖼️ 2.1 AGREGAR IMAGEN DEL LOGO AL PDF
+                const img = document.getElementById('logo-web');
+                if (img) {
+                    // Usamos las dimensiones del logo en la web para el PDF
+                    const imgWidth = 180; // Ancho fijo en el HTML/CSS
+                    const imgHeight = 50; // Alto fijo en el HTML/CSS
+                    // Usamos la posición izquierda del margen superior (margin, y)
+                    doc.addImage(img, 'PNG', margin, y - 5, imgWidth, imgHeight); 
+                }
 
                 doc.setFontSize(10);
                 doc.setTextColor(textColor);
@@ -392,14 +404,14 @@
                 // Ejecución de la descarga
                 doc.save(fileName); 
                 
-                // 🛑 CORRECCIÓN CLAVE: Esperar 100ms para que la descarga comience
+                // Esperar 100ms para que la descarga comience (previene el bloqueo del botón)
                 await new Promise(resolve => setTimeout(resolve, 100)); 
 
             } catch (error) {
                 // Muestra un error en la consola si la generación falla
                 console.error("Error al generar o descargar el PDF:", error);
             } finally {
-                // Esto se ejecuta SIEMPRE (haya éxito o error), después de la pausa asíncrona
+                // Esto se ejecuta SIEMPRE 
                 btnDescargar.disabled = false;
                 btnDescargar.textContent = 'Descargar PDF';
             }
