@@ -18,7 +18,7 @@
         .btn-secundario{background:#28a745}
         .btn-peligro{background:#dc3545;padding:6px 8px;border-radius:6px;font-size:12px}
 
-        /* Contenedor de la Cotización (Importante para html2canvas) */
+        /* Contenedor de la Cotización */
         .cotizacion-container{
             width:8.5in; 
             min-height:11in; 
@@ -61,6 +61,30 @@
         @media print{
             .controles{display:none}
             .cotizacion-container{box-shadow:none;border:none}
+        }
+
+        /* 🛑 ESTILOS NUEVOS: Para la generación del PDF */
+        body.generando-pdf .cotizacion-container {
+            /* Oculta el borde y sombra de la hoja para la captura */
+            border: none;
+            box-shadow: none;
+        }
+
+        body.generando-pdf input,
+        body.generando-pdf textarea {
+            /* Oculta los bordes de los campos del formulario */
+            border: none !important;
+            background-color: transparent !important;
+            box-shadow: none !important;
+            /* Asegura que el texto sea visible */
+            color: #333 !important; 
+            /* Evita que se vea el control de 'resize' en textareas */
+            resize: none;
+        }
+
+        body.generando-pdf .btn-peligro {
+            /* Oculta los botones de 'X' para eliminar filas */
+            display: none !important;
         }
     </style>
 </head>
@@ -147,16 +171,15 @@
             <p>Términos: Pago 50% adelantado, 50% contra entrega (personalízalo)</p>
         </footer>
     </div>
+    
     <script>
-        // Inicialización y manejo de la interfaz
+        // Inicialización y manejo de la interfaz (sin cambios)
         document.getElementById('fecha-hoy').valueAsDate = new Date();
         const $tablaBody = document.querySelector('#tabla-items tbody');
         const btnAgregar = document.getElementById('btnAgregar');
         const btnDescargar = document.getElementById('btnDescargar');
         const ivaPorcInput = document.getElementById('iva-porc');
 
-        // --- Lógica de la interfaz (sin cambios) ---
-        
         $tablaBody.addEventListener('click', e => {
             if (e.target.matches('.btn-peligro')) {
                 e.target.closest('tr').remove();
@@ -198,55 +221,54 @@
             document.getElementById('total-general').textContent = total.toFixed(2);
         }
 
-        // --- 🚀 LÓGICA DE GENERACIÓN DE PDF MODERNA (html2canvas) ---
+        // --- LÓGICA DE GENERACIÓN DE PDF (html2canvas) ---
 
         async function descargarPDF() {
             btnDescargar.disabled = true;
             btnDescargar.textContent = 'Generando PDF...';
 
+            // 🛑 1. AÑADIMOS LA CLASE AL BODY
+            document.body.classList.add('generando-pdf');
+
             try {
-                // 1. Obtener el elemento a convertir
+                // 2. Obtener el elemento a convertir
                 const cotizacionElement = document.getElementById('cotizacionParaPDF');
                 
-                // 2. Inicializar jsPDF (accediendo a la clase del objeto window)
+                // 3. Inicializar jsPDF
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF({
-                    orientation: 'portrait', // 'p'
+                    orientation: 'portrait',
                     unit: 'pt',
-                    format: 'letter' // 8.5 x 11 pulgadas (612pt x 792pt)
+                    format: 'letter'
                 });
 
-                // 3. Definir márgenes y dimensiones
-                const margin = 36; // 0.5 pulgadas (36 puntos)
+                // 4. Definir márgenes y dimensiones
+                const margin = 36;
                 const pdfWidth = doc.internal.pageSize.getWidth() - (margin * 2);
                 const pdfPageHeight = doc.internal.pageSize.getHeight() - (margin * 2);
 
-                // 4. Usar html2canvas para "capturar" el elemento
+                // 5. Usar html2canvas para "capturar" el elemento (AHORA EN MODO LIMPIO)
                 const canvas = await html2canvas(cotizacionElement, {
-                    scale: 2, // Aumenta la escala para mayor resolución (texto más nítido)
-                    useCORS: true, // Permite cargar imágenes (tu logo)
-                    // Asegurarse de que use todo el ancho, no solo el ancho visible
+                    scale: 2, 
+                    useCORS: true,
                     width: cotizacionElement.scrollWidth, 
-                    height: cotizacionElement.scrollHeight
+                    height: cotizacionElement.scrollHeight,
+                    // Asegura que los fondos blancos se capturen (importante)
+                    backgroundColor: '#ffffff'
                 });
 
                 const imgData = canvas.toDataURL('image/png');
-
-                // 5. Calcular la escala de la imagen para que quepa en el PDF
                 const imgWidth = pdfWidth;
                 const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-                // 6. Lógica para manejar múltiples páginas (si la cotización es muy larga)
                 let heightLeft = imgHeight;
-                let position = margin; // Posición Y inicial (con margen superior)
+                let position = margin; 
 
-                // Añadir la primera página
+                // 6. Añadir imagen al PDF (con paginación)
                 doc.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
                 heightLeft -= pdfPageHeight;
 
-                // Añadir páginas adicionales si es necesario
                 while (heightLeft > 0) {
-                    position = margin - heightLeft; // Mueve la imagen hacia arriba
+                    position = margin - heightLeft;
                     doc.addPage();
                     doc.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
                     heightLeft -= pdfPageHeight;
@@ -263,18 +285,19 @@
                 console.error("Error al generar el PDF con html2canvas:", error);
                 alert("Hubo un error al generar el PDF. Revisa la consola para más detalles.");
             } finally {
-                // 8. Reestablecer el botón
+                // 🛑 8. QUITAMOS LA CLASE DEL BODY Y REESTABLECEMOS EL BOTÓN
+                document.body.classList.remove('generando-pdf');
                 btnDescargar.disabled = false;
                 btnDescargar.textContent = 'Descargar PDF';
             }
         }
 
         btnDescargar.addEventListener('click', () => {
-             calcularTotales(); // Asegura que los totales estén actualizados
-             descargarPDF();  // Llama a la nueva función
+             calcularTotales(); 
+             descargarPDF();  
         });
 
-        calcularTotales(); // Carga inicial
+        calcularTotales();
     </script>
 </body>
 </html>
