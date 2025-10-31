@@ -33,7 +33,7 @@
         
         /* Resto de estilos (sin cambios) */
         .header table{width:100%}
-        #logo-web{max-width:150px; height:auto; display:block;}
+        #logo-web{max-width:180px; height:auto; display:block;}
         .empresa-info{text-align:right}
         .header h1{color:var(--azul);margin:0 0 6px;font-size:26px}
         .info-section{display:flex;gap:30px;margin-top:24px}
@@ -74,7 +74,8 @@
 
         body.generando-pdf input,
         body.generando-pdf textarea {
-            border: none !important;
+            /* 🚀 CORRECCIÓN 1: Borde transparente para mantener alineación */
+            border: 1px solid transparent !important; 
             background-color: transparent !important;
             box-shadow: none !important;
             color: #333 !important; 
@@ -84,16 +85,14 @@
         body.generando-pdf .btn-peligro {
             display: none !important;
         }
-
-        /* 🚀 AJUSTE DE MÁRGENES SOLICITADO */
+        
         body.generando-pdf .totales {
-            /* Aumenta el espacio sobre los totales */
             margin-top: 40px !important;
         }
 
         body.generando-pdf .firmas {
-            /* Aumenta considerablemente el espacio sobre las firmas */
-            margin-top: 180px !important;
+            /* 🚀 CORRECCIÓN 2: Doble margen para sellos y firmas */
+            margin-top: 360px !important;
         }
     </style>
 </head>
@@ -107,7 +106,7 @@
         <header class="header">
             <table>
                 <tr>
-                    <td style="width:150px;vertical-align:top;">
+                    <td style="width:200px;vertical-align:top;">
                         <img id="logo-web" src="logo tu quincalla.png" alt="Logo La Quincalla de Mauriel">
                     </td>
                     <td style="vertical-align:top;">
