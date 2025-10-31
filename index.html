@@ -9,7 +9,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <style>
-        /* Estilos CSS */
+        /* Estilos CSS (Sin cambios) */
         :root{--azul:#007bff;--gris:#f4f7f6;--border-color:#ccc}
         body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--gris);margin:0;padding:20px;color:#333}
         
@@ -18,7 +18,6 @@
         .btn-secundario{background:#28a745}
         .btn-peligro{background:#dc3545;padding:6px 8px;border-radius:6px;font-size:12px}
 
-        /* Contenedor de la Cotización */
         .cotizacion-container{
             width:8.5in; 
             min-height:11in; 
@@ -32,11 +31,11 @@
         }
         
         .header table{width:100%}
-        /* 🚀 CORRECCIÓN: Tamaño de logo ajustado */
-        #logo-web{max-width:120px; height:auto; display:block;}
-
+        #logo-web{max-width:120px; height:auto; display:block;} /* Logo 120px */
         .empresa-info{text-align:right}
         .header h1{color:var(--azul);margin:0 0 6px;font-size:26px}
+        
+        /* Estilos base de la sección de info */
         .info-section{display:flex;gap:30px;margin-top:24px}
         .info-section > div{flex:1; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px;} 
         .info-section h3{margin-top:0; border-bottom: 2px solid var(--azul); padding-bottom: 4px; font-size: 16px; margin-bottom: 12px;}
@@ -45,6 +44,7 @@
         .info-section .cot-data label {width: auto; min-width: 80px;} 
         .info-section .cot-data .info-item {justify-content: flex-end;} 
         
+        /* Padding base de inputs */
         .info-item input,.info-item textarea{flex:1;padding:4px 6px;border:1px solid #e6e6e6;border-radius:4px;font-size:13px}
         .info-item textarea{min-height:50px}
         
@@ -76,60 +76,75 @@
         body.generando-pdf .cotizacion-container {
             border: none;
             box-shadow: none;
-            /* 🚀 CORRECCIÓN: Evitar la altura mínima de 11in para que quepa en 1 pág */
             min-height: 0 !important; 
         }
 
+        /* 🚀 CORRECCIÓN: Quitar cajas y reducir espacio en Info Cliente/Cotización */
+        body.generando-pdf .info-section {
+            gap: 20px !important; /* Mantiene un espacio entre las dos columnas */
+            margin-top: 20px !important;
+        }
+        body.generando-pdf .info-section > div {
+            border: none !important;
+            padding: 0 !important; /* Quita el padding de la caja */
+        }
+        body.generando-pdf .info-section h3 {
+             margin-bottom: 8px !important; /* Reduce espacio bajo el título (CLIENTE) */
+        }
+        body.generando-pdf .info-item {
+             margin-bottom: 2px !important; /* Reduce espacio entre líneas (Nombres:, RIF/CI:, etc) */
+        }
+
+        /* 🚀 CORRECCIÓN: Evitar texto cortado en inputs */
         body.generando-pdf input,
         body.generando-pdf textarea {
-            /* 🚀 CORRECCIÓN: Usar borde transparente para mantener la altura y alineación del texto */
-            border: 1px solid transparent !important; 
+            border: none !important; /* Quita el borde */
             background-color: transparent !important;
             box-shadow: none !important;
             color: #333 !important; 
             resize: none;
-            /* Asegura que el padding original se mantenga */
-            padding-top: 4px !important;
-            padding-bottom: 4px !important;
+            /* Compensar 1px de borde con 1px de padding */
+            padding-top: 5px !important; 
+            padding-bottom: 5px !important;
         }
 
-        /* Re-aplicar padding horizontal que se pudo perder */
+        /* Re-aplicar padding horizontal original */
         body.generando-pdf .info-item input,
         body.generando-pdf .info-item textarea {
             padding-left: 6px !important;
             padding-right: 6px !important;
         }
+         body.generando-pdf #tabla-items input {
+            padding-left: 4px !important;
+            padding-right: 4px !important;
+        }
+
 
         body.generando-pdf .btn-peligro {
             display: none !important;
         }
         
-        /* 🚀 CORRECCIÓN: Compactar verticalmente las secciones */
-        body.generando-pdf .info-item {
-            margin-bottom: 2px !important; /* Reduce espacio entre líneas de cliente */
-        }
-
-        /* 🚀 CORRECCIÓN: Compactar la tabla para que quepan más productos */
+        /* 🚀 CORRECCIÓN: Compactar tabla */
         body.generando-pdf #tabla-items th,
         body.generando-pdf #tabla-items td {
             padding-top: 4px !important;
             padding-bottom: 4px !important;
         }
 
-        /* 🚀 CORRECCIÓN: Ocultar la última columna (la del botón 'X') */
+        /* Ocultar la última columna (botón 'X') */
         body.generando-pdf #tabla-items th:last-child,
         body.generando-pdf #tabla-items td:last-child {
             display: none !important;
         }
 
-        /* 🚀 CORRECCIÓN: Redistribuir el ancho de las columnas restantes */
+        /* Redistribuir el ancho de las columnas */
         body.generando-pdf #tabla-items th:nth-child(1), /* CANT. */
         body.generando-pdf #tabla-items td:nth-child(1) {
             width: 10% !important; 
         }
         body.generando-pdf #tabla-items th:nth-child(2), /* DESCRIPCIÓN */
         body.generando-pdf #tabla-items td:nth-child(2) {
-            width: 60% !important; /* Más espacio para descripción */
+            width: 60% !important; /* Más espacio */
         }
         body.generando-pdf #tabla-items th:nth-child(3), /* P. UNITARIO */
         body.generando-pdf #tabla-items td:nth-child(3) {
@@ -141,12 +156,11 @@
         }
 
         body.generando-pdf .totales {
-            margin-top: 20px !important; /* Margen normal */
+            margin-top: 20px !important; 
         }
 
         body.generando-pdf .firmas {
-            /* Margen suficiente para firmas pero sin saltar de página */
-            margin-top: 100px !important; 
+            margin-top: 100px !important; /* Espacio para firmas sin saltar página */
         }
 
         body.generando-pdf .footer {
