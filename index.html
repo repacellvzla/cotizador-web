@@ -44,10 +44,11 @@
         .info-section .cot-data label {width: auto; min-width: 80px;} 
         .info-section .cot-data .info-item {justify-content: flex-end;} 
         
-        /* Padding base de los inputs */
         .info-item input,.info-item textarea{flex:1;padding:4px 6px;border:1px solid #e6e6e6;border-radius:4px;font-size:13px}
         .info-item textarea{min-height:50px}
+        
         table#tabla-items{width:100%;margin-top:24px;border-collapse:collapse; font-size: 13px;}
+        /* Padding original de la tabla */
         #tabla-items th,#tabla-items td{border:1px solid #e6e6e6;padding:8px;text-align:left} 
         #tabla-items th{background:#f0f0f0; font-size: 14px;}
         #tabla-items input{width:100%;box-sizing:border-box;padding:4px;border:1px solid #ccd; font-size: 13px;} 
@@ -73,49 +74,48 @@
         body.generando-pdf .cotizacion-container {
             border: none;
             box-shadow: none;
-            /* 🚀 CORRECCIÓN 2: Quitar min-height para evitar página extra */
+            /* 🚀 CORRECCIÓN 2: Evitar la altura mínima de 11in */
             min-height: 0 !important; 
         }
 
         body.generando-pdf input,
         body.generando-pdf textarea {
-            border: none !important;
+            /* 🚀 CORRECCIÓN 1: Usar borde transparente para mantener la altura y alineación */
+            border: 1px solid transparent !important; 
             background-color: transparent !important;
             box-shadow: none !important;
             color: #333 !important; 
             resize: none;
-            
-            /* 🚀 CORRECCIÓN 1: Compensar el padding del borde quitado */
-            /* Se basa en el padding original (4px) + 1px del borde */
-            padding-top: 5px !important;
-            padding-bottom: 5px !important;
+            /* Asegura que el padding vertical se mantenga */
+            padding-top: 4px !important;
+            padding-bottom: 4px !important;
         }
 
-        /* Ajuste específico para los inputs de la info (que tenían 6px horizontal) */
+        /* Re-aplicar padding horizontal que se pudo perder */
         body.generando-pdf .info-item input,
         body.generando-pdf .info-item textarea {
             padding-left: 6px !important;
             padding-right: 6px !important;
         }
-        
-        /* Ajuste específico para los inputs de la tabla (que tenían 4px horizontal) */
-        body.generando-pdf #tabla-items input {
-            padding-left: 4px !important;
-            padding-right: 4px !important;
-        }
-
 
         body.generando-pdf .btn-peligro {
             display: none !important;
         }
         
+        /* 🚀 CORRECCIÓN 2: Reducir padding de la tabla para que quepan más filas */
+        body.generando-pdf #tabla-items th,
+        body.generando-pdf #tabla-items td {
+            padding-top: 4px !important;
+            padding-bottom: 4px !important;
+        }
+
         body.generando-pdf .totales {
-            margin-top: 40px !important;
+            margin-top: 20px !important; /* Margen reducido */
         }
 
         body.generando-pdf .firmas {
-            /* 🚀 CORRECCIÓN 2: Margen grande pero ajustado para una página */
-            margin-top: 280px !important;
+            /* 🚀 CORRECCIÓN 2: Margen grande, pero no tan grande como para saltar de página */
+            margin-top: 160px !important; /* (Original era 120px) */
         }
     </style>
 </head>
