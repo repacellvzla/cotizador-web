@@ -6,10 +6,10 @@
     <title>Cotización - La Quincalla de Mauriel</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <style>
-        /* Estilos CSS (Sin cambios, solo para referencia) */
+        /* Estilos CSS (Sin cambios) */
         :root{--azul:#007bff;--gris:#f4f7f6;--border-color:#ccc}
         body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--gris);margin:0;padding:20px;color:#333}
         
@@ -18,43 +18,50 @@
         .btn-secundario{background:#28a745}
         .btn-peligro{background:#dc3545;padding:6px 8px;border-radius:6px;font-size:12px}
 
-        .cotizacion-container{width:8.5in;min-height:11in;margin:0 auto;background:#fff;border:1px solid #e6e6e6;padding:36px 44px;box-shadow:0 0 15px rgba(0,0,0,.08);position:relative;box-sizing:border-box}
+        /* Contenedor de la Cotización (Importante para html2canvas) */
+        .cotizacion-container{
+            width:8.5in; 
+            min-height:11in; 
+            margin:0 auto; 
+            background:#fff; 
+            border:1px solid #e6e6e6; 
+            padding:36px 44px; 
+            box-shadow:0 0 15px rgba(0,0,0,.08); 
+            position:relative; 
+            box-sizing:border-box
+        }
         
-        /* Diseño para pantalla */
+        /* Resto de estilos (sin cambios) */
         .header table{width:100%}
         #logo-web{max-width:180px; height:auto; display:block;}
-
         .empresa-info{text-align:right}
         .header h1{color:var(--azul);margin:0 0 6px;font-size:26px}
-
         .info-section{display:flex;gap:30px;margin-top:24px}
         .info-section > div{flex:1; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px;} 
         .info-section h3{margin-top:0; border-bottom: 2px solid var(--azul); padding-bottom: 4px; font-size: 16px; margin-bottom: 12px;}
-        
         .info-item{display:flex;align-items:center;margin-bottom:6px; font-size: 13px;}
         .info-item label{width:100px;font-weight:600;margin-right:8px}
         .info-section .cot-data label {width: auto; min-width: 80px;} 
         .info-section .cot-data .info-item {justify-content: flex-end;} 
         .info-item input,.info-item textarea{flex:1;padding:4px 6px;border:1px solid #e6e6e6;border-radius:4px;font-size:13px}
         .info-item textarea{min-height:50px}
-        
         table#tabla-items{width:100%;margin-top:24px;border-collapse:collapse; font-size: 13px;}
         #tabla-items th,#tabla-items td{border:1px solid #e6e6e6;padding:8px;text-align:left} 
         #tabla-items th{background:#f0f0f0; font-size: 14px;}
         #tabla-items input{width:100%;box-sizing:border-box;padding:4px;border:1px solid #ccd; font-size: 13px;} 
         .total-fila{font-weight:700;text-align:right}
-        
         .totales{float:right;width:300px;margin-top:20px; font-size: 14px;}
         .totales-item{display:flex;justify-content:space-between;padding:6px 0}
         .totales-item.total-general{border-top:2px solid #333;padding-top:10px;color:var(--azul);font-size:18px}
-        
         .firmas{clear:both;margin-top:120px;display:flex;justify-content:space-between;text-align:center;color:#555; font-size: 14px;} 
         .firmas div{width:45%}
         .firmas span{display:block;border-top:1px solid #999;margin-bottom:6px;padding-top:6px}
-        
         .footer{clear:both;padding-top:36px;border-top:1px solid #eee;text-align:center;color:#777;font-size:11px}
         
-        @media print{.controles{display:none}.cotizacion-container{box-shadow:none;border:none}}
+        @media print{
+            .controles{display:none}
+            .cotizacion-container{box-shadow:none;border:none}
+        }
     </style>
 </head>
 <body>
@@ -140,7 +147,6 @@
             <p>Términos: Pago 50% adelantado, 50% contra entrega (personalízalo)</p>
         </footer>
     </div>
-
     <script>
         // Inicialización y manejo de la interfaz
         document.getElementById('fecha-hoy').valueAsDate = new Date();
@@ -149,7 +155,7 @@
         const btnDescargar = document.getElementById('btnDescargar');
         const ivaPorcInput = document.getElementById('iva-porc');
 
-        // ... (Funciones calcularTotales y EventListeners son los mismos) ...
+        // --- Lógica de la interfaz (sin cambios) ---
         
         $tablaBody.addEventListener('click', e => {
             if (e.target.matches('.btn-peligro')) {
@@ -192,250 +198,83 @@
             document.getElementById('total-general').textContent = total.toFixed(2);
         }
 
-        // --- Lógica de Generación de PDF (Vectorial con jsPDF) ---
+        // --- 🚀 LÓGICA DE GENERACIÓN DE PDF MODERNA (html2canvas) ---
 
         async function descargarPDF() {
             btnDescargar.disabled = true;
             btnDescargar.textContent = 'Generando PDF...';
 
             try {
-                // 🛑 CORRECCIÓN PRINCIPAL (LOGICA MODERNA): 
-                // Accedemos a la clase jsPDF correctamente para que autotable se adjunte.
+                // 1. Obtener el elemento a convertir
+                const cotizacionElement = document.getElementById('cotizacionParaPDF');
+                
+                // 2. Inicializar jsPDF (accediendo a la clase del objeto window)
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF({
-                    orientation: 'portrait',
-                    unit: 'pt', 
-                    format: 'letter' 
+                    orientation: 'portrait', // 'p'
+                    unit: 'pt',
+                    format: 'letter' // 8.5 x 11 pulgadas (612pt x 792pt)
                 });
 
-                const pageHeight = doc.internal.pageSize.height;
-                const pageWidth = doc.internal.pageSize.width;
-                const margin = 36; 
-                const contentWidth = pageWidth - 2 * margin; 
-                let y = margin; 
+                // 3. Definir márgenes y dimensiones
+                const margin = 36; // 0.5 pulgadas (36 puntos)
+                const pdfWidth = doc.internal.pageSize.getWidth() - (margin * 2);
+                const pdfPageHeight = doc.internal.pageSize.getHeight() - (margin * 2);
 
-                const primaryColor = '#007bff';
-                const textColor = '#333333';
-                const grayColor = '#f0f0f0';
-                
-                // 2. Info de la Empresa y Título de Cotización
-                doc.setFontSize(24);
-                doc.setTextColor(primaryColor);
-                doc.setFont('helvetica', 'bold');
-                doc.text("COTIZACIÓN", pageWidth - margin, y + 5, { align: 'right' }); 
-                
-                // 🖼️ AGREGAR IMAGEN DEL LOGO AL PDF
-                const img = document.getElementById('logo-web');
-                if (img && img.complete) {
-                    // Usamos dimensiones para asegurar que no exceda el área
-                    const logoPDFWidth = 150; 
-                    const logoPDFHeight = 50; 
-                    
-                    // Solo si la imagen tiene fuente, la agregamos
-                    if (img.src) {
-                        // El formato PNG es más recomendado para logos sin fondo
-                        doc.addImage(img, 'PNG', margin, y, logoPDFWidth, logoPDFHeight); 
-                    }
+                // 4. Usar html2canvas para "capturar" el elemento
+                const canvas = await html2canvas(cotizacionElement, {
+                    scale: 2, // Aumenta la escala para mayor resolución (texto más nítido)
+                    useCORS: true, // Permite cargar imágenes (tu logo)
+                    // Asegurarse de que use todo el ancho, no solo el ancho visible
+                    width: cotizacionElement.scrollWidth, 
+                    height: cotizacionElement.scrollHeight
+                });
+
+                const imgData = canvas.toDataURL('image/png');
+
+                // 5. Calcular la escala de la imagen para que quepa en el PDF
+                const imgWidth = pdfWidth;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+                // 6. Lógica para manejar múltiples páginas (si la cotización es muy larga)
+                let heightLeft = imgHeight;
+                let position = margin; // Posición Y inicial (con margen superior)
+
+                // Añadir la primera página
+                doc.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
+                heightLeft -= pdfPageHeight;
+
+                // Añadir páginas adicionales si es necesario
+                while (heightLeft > 0) {
+                    position = margin - heightLeft; // Mueve la imagen hacia arriba
+                    doc.addPage();
+                    doc.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
+                    heightLeft -= pdfPageHeight;
                 }
-
-                doc.setFontSize(10);
-                doc.setTextColor(textColor);
-                doc.setFont('helvetica', 'normal');
-                doc.text("LA QUINCALLA DE MAURIEL, C.A.", pageWidth - margin, y + 25, { align: 'right' });
-                doc.text("RIF: J-505792989", pageWidth - margin, y + 37, { align: 'right' });
-                doc.text("Sta Teresa del Tuy, Independencia, Miranda.", pageWidth - margin, y + 49, { align: 'right' });
-                doc.text("Teléfono: +58 0414-2738221", pageWidth - margin, y + 61, { align: 'right' });
-                doc.text("Email: laquincalledemauriel@gmail.com", pageWidth - margin, y + 73, { align: 'right' });
                 
-                y += 90; 
-
-                // Línea divisoria
-                doc.setDrawColor(primaryColor);
-                doc.setLineWidth(2);
-                doc.line(margin, y, pageWidth - margin, y);
-                y += 20;
-
-                // 4. Sección Cliente / Cotización
-                doc.setFontSize(12);
-                doc.setFont('helvetica', 'bold');
-                doc.text("CLIENTE", margin, y);
-                doc.text("COTIZACIÓN", pageWidth / 2 + 10, y); 
-
-                y += 15;
-                doc.setFontSize(10);
-                doc.setFont('helvetica', 'normal');
-
-                const clienteNombre = document.getElementById('cliente-nombre').value || "Nombre del Cliente";
-                const clienteId = document.getElementById('cliente-id').value || "RIF o Cédula";
-                const clienteTel = document.getElementById('cliente-tel').value || "Teléfono";
-                const clienteDir = document.getElementById('cliente-dir').value || "Dirección";
-
-                const cotizacionNumero = document.getElementById('cotizacion-numero').value;
-                const fechaHoy = document.getElementById('fecha-hoy').value;
-                const validez = document.getElementById('validez').value;
-                
-                // Columna Cliente
-                doc.text("Nombres:", margin, y);
-                doc.text(clienteNombre, margin + 70, y);
-                y += 15;
-                doc.text("RIF/CI:", margin, y);
-                doc.text(clienteId, margin + 70, y);
-                y += 15;
-                doc.text("Teléfono:", margin, y);
-                doc.text(clienteTel, margin + 70, y);
-                y += 15;
-                doc.text("Dirección:", margin, y);
-                doc.text(clienteDir, margin + 70, y); 
-
-                // Columna Cotización (Alineada a la derecha)
-                let yCot = margin + 115; 
-                const cotLabelX = pageWidth / 2 + 10;
-                const cotValueX = pageWidth - margin;
-
-                doc.text("Número:", cotLabelX, yCot);
-                doc.text(cotizacionNumero, cotValueX, yCot, { align: 'right' }); 
-                yCot += 15;
-                doc.text("Fecha:", cotLabelX, yCot);
-                doc.text(fechaHoy, cotValueX, yCot, { align: 'right' }); 
-                yCot += 15;
-                doc.text("Validez:", cotLabelX, yCot);
-                doc.text(validez, cotValueX, yCot, { align: 'right' }); 
-                
-                y = y > yCot ? y : yCot; 
-                y += 40; 
-
-
-                // 5. Tabla de Productos (usando doc.autoTable)
-                const tableHeaders = [
-                    { header: 'CANT.', dataKey: 'cantidad' },
-                    { header: 'DESCRIPCIÓN', dataKey: 'descripcion' },
-                    { header: 'P. UNITARIO ($)', dataKey: 'precio' },
-                    { header: 'TOTAL ($)', dataKey: 'total' }
-                ];
-
-                const tableRows = [];
-                document.querySelectorAll('#tabla-items tbody tr').forEach(fila => {
-                    const cantidad = parseFloat(fila.querySelector('.cantidad').value) || 0;
-                    const descripcion = fila.querySelector('.descripcion').value || '';
-                    const precio = parseFloat(fila.querySelector('.precio').value) || 0;
-                    const totalFila = (cantidad * precio).toFixed(2);
-                    tableRows.push({
-                        cantidad: cantidad,
-                        descripcion: descripcion,
-                        precio: precio.toFixed(2),
-                        total: totalFila
-                    });
-                });
-
-                doc.autoTable({
-                    startY: y,
-                    head: [tableHeaders.map(h => h.header)],
-                    body: tableRows.map(row => tableHeaders.map(h => row[h.dataKey])),
-                    theme: 'striped', 
-                    headStyles: { fillColor: grayColor, textColor: textColor, fontStyle: 'bold', fontSize: 10, halign: 'left' },
-                    bodyStyles: { fontSize: 9, textColor: textColor, halign: 'left' },
-                    columnStyles: {
-                        'cantidad': { cellWidth: 40, halign: 'center' },
-                        'descripcion': { cellWidth: 'auto' }, 
-                        'precio': { cellWidth: 70, halign: 'right' },
-                        'total': { cellWidth: 70, halign: 'right' }
-                    },
-                    margin: { left: margin, right: margin }
-                });
-
-                y = doc.autoTable.previous.finalY + 20; 
-
-
-                // 6. Totales
-                const subtotal = parseFloat(document.getElementById('subtotal').textContent) || 0;
-                const ivaPorc = parseFloat(document.getElementById('iva-porc').value) || 0;
-                const ivaMonto = parseFloat(document.getElementById('iva-monto').textContent) || 0;
-                const totalGeneral = parseFloat(document.getElementById('total-general').textContent) || 0;
-
-                doc.setFontSize(10);
-                doc.setFont('helvetica', 'normal');
-                const totalesX = pageWidth - margin - 150; 
-                
-                doc.text("Subtotal:", totalesX, y);
-                doc.text(subtotal.toFixed(2), pageWidth - margin, y, { align: 'right' });
-                y += 15;
-                
-                doc.text(`IVA (${ivaPorc}%):`, totalesX, y);
-                doc.text(ivaMonto.toFixed(2), pageWidth - margin, y, { align: 'right' });
-                y += 20;
-                
-                doc.setDrawColor(textColor);
-                doc.setLineWidth(0.5);
-                doc.line(totalesX, y, pageWidth - margin, y); 
-                y += 15;
-
-                doc.setFontSize(14);
-                doc.setTextColor(primaryColor);
-                doc.setFont('helvetica', 'bold');
-                doc.text("TOTAL ($):", totalesX, y);
-                doc.text(totalGeneral.toFixed(2), pageWidth - margin, y, { align: 'right' });
-                y += 50;
-
-
-                // 7. Firmas
-                doc.setFontSize(10);
-                doc.setTextColor(textColor);
-                doc.setFont('helvetica', 'normal');
-                
-                const firmaX1 = margin + (contentWidth / 4);
-                const firmaX2 = pageWidth - margin - (contentWidth / 4);
-
-                doc.line(margin, y, firmaX1 - 20, y); 
-                doc.text("De Recibido por el Cliente", margin + ((firmaX1 - margin) / 2) - 20, y + 15, { align: 'center' }); 
-
-                doc.line(firmaX2 + 20, y, pageWidth - margin, y); 
-                doc.text("Firma y Sello de la Empresa", firmaX2 + 20 + ((pageWidth - margin - (firmaX2 + 20)) / 2), y + 15, { align: 'center' }); 
-                y += 50;
-
-                // 8. Footer
-                doc.setFontSize(8);
-                doc.setTextColor('#777777');
-                doc.text("GRACIAS POR SU CONFIANZA", pageWidth / 2, pageHeight - margin - 20, { align: 'center' });
-                doc.text("Términos: Pago 50% adelantado, 50% contra entrega (personalízalo)", pageWidth / 2, pageHeight - margin - 8, { align: 'center' });
-
-                // Guardar el PDF
+                // 7. Generar nombre de archivo y guardar
                 const cotNum = (document.getElementById('cotizacion-numero')?.value || 'SinNumero').trim();
                 const cliente = (document.getElementById('cliente-nombre')?.value || 'Cliente').trim().replace(/\s+/g,'-');
                 const fileName = `Cotizacion-${cotNum}-${cliente}.pdf`;
-                
+
                 doc.save(fileName); 
-                
-                // Esperar 100ms para liberar el botón
-                await new Promise(resolve => setTimeout(resolve, 100)); 
 
             } catch (error) {
-                console.error("Error al generar o descargar el PDF:", error);
-                // Si la imagen no está cargada, la descarga fallará aquí.
-                alert("Error al generar el PDF. Verifica si la imagen 'logo tu quincalla.png' existe y se cargó correctamente.");
+                console.error("Error al generar el PDF con html2canvas:", error);
+                alert("Hubo un error al generar el PDF. Revisa la consola para más detalles.");
             } finally {
-                // Esto se ejecuta SIEMPRE
+                // 8. Reestablecer el botón
                 btnDescargar.disabled = false;
                 btnDescargar.textContent = 'Descargar PDF';
             }
         }
 
-        btnDescargar.addEventListener('click', async () => {
-            calcularTotales();
-            // 🛑 TRUCO FINAL: Aseguramos que la imagen esté cargada antes de descargar
-            const img = document.getElementById('logo-web');
-            if (img.complete) {
-                await descargarPDF();
-            } else {
-                img.onload = () => descargarPDF();
-                img.onerror = () => {
-                    alert("Error: No se pudo cargar la imagen del logo. Revisa el nombre o la ruta.");
-                    btnDescargar.disabled = false;
-                    btnDescargar.textContent = 'Descargar PDF';
-                };
-            }
+        btnDescargar.addEventListener('click', () => {
+             calcularTotales(); // Asegura que los totales estén actualizados
+             descargarPDF();  // Llama a la nueva función
         });
 
-        calcularTotales();
+        calcularTotales(); // Carga inicial
     </script>
 </body>
 </html>
