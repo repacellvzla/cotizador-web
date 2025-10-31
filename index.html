@@ -41,7 +41,14 @@
         .info-item{display:flex;align-items:center;margin-bottom:6px; font-size: 13px;}
         .info-item label{width:100px;font-weight:600;margin-right:8px}
         .info-section .cot-data label {width: auto; min-width: 80px;} 
-        .info-section .cot-data .info-item {justify-content: flex-end;} 
+        
+        /* =============================================
+           ✅ CORRECCIÓN 1: ALINEACIÓN
+           Se eliminó la regla 'justify-content: flex-end;' de la siguiente clase
+           para que la columna de cotización se alinee a la izquierda.
+           =============================================
+        */
+        .info-section .cot-data .info-item { /* justify-content: flex-end; <-- SE ELIMINÓ ESTO */ } 
         
         .info-item input{padding:4px 6px;border:1px solid #e6e6e6;border-radius:4px;font-size:13px}
         /* El textarea tiene una altura mínima en la web */
@@ -94,7 +101,12 @@
              margin-bottom: 2px !important; 
         }
 
-        /* 🚀 CORRECCIÓN: Evitar texto cortado y arreglar gap de 'Dirección' */
+        /* =============================================
+           ✅ CORRECCIÓN 2: TEXTO CORTADO
+           Se reemplazó el 'padding-top/bottom: 5px' (que causa el bug de corte)
+           por 'line-height' y 'min-height' para dar espacio vertical al texto.
+           =============================================
+        */
         body.generando-pdf input,
         body.generando-pdf textarea {
             border: none !important; /* Quita el borde visual */
@@ -103,13 +115,14 @@
             color: #333 !important; 
             resize: none;
             
-            /* 1. Arregla el texto cortado (4px original + 1px por el borde quitado) */
-            padding-top: 5px !important; 
-            padding-bottom: 5px !important;
+            /* 1. CORRECCIÓN TEXTO CORTADO: */
+            padding-top: 0 !important; 
+            padding-bottom: 0 !important;
+            line-height: 1.5 !important; /* Da 'aire' vertical al texto */
 
-            /* 2. Arregla el gap de 'Dirección' (forzando altura de 1 línea) */
+            /* 2. Arregla el gap de 'Dirección' y asegura altura mínima */
             height: auto !important; 
-            min-height: 0 !important;
+            min-height: 1.5em !important; /* Altura mínima basada en font-size */
         }
 
         /* Re-aplicar padding horizontal original */
@@ -200,7 +213,7 @@
                 <div class="info-item"><label>Nombres:</label><input id="cliente-nombre" type="text" placeholder="Nombre del Cliente"></div>
                 <div class="info-item"><label>RIF/CI:</label><input id="cliente-id" type="text" placeholder="RIF o Cédula"></div>
                 <div class="info-item"><label>Teléfono:</label><input id="cliente-tel" type="text" placeholder="Teléfono"></div>
-                <div class="info-item"><label>Dirección:</label><textarea id="cliente-dir" placeholder="Dirección"></textarea></div>
+                <div class="info-item"><label>Dirección:</label><input id="cliente-dir" type="text" placeholder="Dirección"></div>
             </div>
             <div class="cot-data">
                 <h3>COTIZACIÓN</h3>
