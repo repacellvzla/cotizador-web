@@ -9,7 +9,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.autotable.min.js"></script>
 
     <style>
-        /* Estilos CSS */
+        /* Estilos CSS (Sin cambios, solo para referencia) */
         :root{--azul:#007bff;--gris:#f4f7f6;--border-color:#ccc}
         body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--gris);margin:0;padding:20px;color:#333}
         
@@ -22,7 +22,6 @@
         
         /* Diseño para pantalla */
         .header table{width:100%}
-        /* Logo placeholder modificado para imagen */
         #logo-web{max-width:180px; height:auto; display:block;}
 
         .empresa-info{text-align:right}
@@ -85,6 +84,7 @@
                 </tr>
             </table>
         </header>
+        
         <section class="info-section">
             <div>
                 <h3>CLIENTE</h3>
@@ -142,18 +142,15 @@
     </div>
 
     <script>
-        // Inicialización
-        // 🛑 CORRECCIÓN: Usamos window.jspdf.jsPDF para compatibilidad con autotable
-        // No necesitamos reasignar a una constante jsPDF
-        
+        // Inicialización y manejo de la interfaz
         document.getElementById('fecha-hoy').valueAsDate = new Date();
         const $tablaBody = document.querySelector('#tabla-items tbody');
         const btnAgregar = document.getElementById('btnAgregar');
         const btnDescargar = document.getElementById('btnDescargar');
         const ivaPorcInput = document.getElementById('iva-porc');
 
-        // --- Lógica de la interfaz (cálculos y botones) ---
-
+        // ... (Funciones calcularTotales y EventListeners son los mismos) ...
+        
         $tablaBody.addEventListener('click', e => {
             if (e.target.matches('.btn-peligro')) {
                 e.target.closest('tr').remove();
@@ -195,7 +192,6 @@
             document.getElementById('total-general').textContent = total.toFixed(2);
         }
 
-
         // --- Lógica de Generación de PDF (Vectorial con jsPDF) ---
 
         async function descargarPDF() {
@@ -203,8 +199,10 @@
             btnDescargar.textContent = 'Generando PDF...';
 
             try {
-                // 🛑 CORRECCIÓN DEL ERROR DE autoTable: Instanciamos jsPDF directamente
-                const doc = new window.jspdf.jsPDF({
+                // 🛑 CORRECCIÓN PRINCIPAL (LOGICA MODERNA): 
+                // Accedemos a la clase jsPDF correctamente para que autotable se adjunte.
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({
                     orientation: 'portrait',
                     unit: 'pt', 
                     format: 'letter' 
@@ -226,14 +224,18 @@
                 doc.setFont('helvetica', 'bold');
                 doc.text("COTIZACIÓN", pageWidth - margin, y + 5, { align: 'right' }); 
                 
-                // 🖼️ 2.1 AGREGAR IMAGEN DEL LOGO AL PDF
+                // 🖼️ AGREGAR IMAGEN DEL LOGO AL PDF
                 const img = document.getElementById('logo-web');
-                if (img) {
-                    // Usamos las dimensiones del logo en la web para el PDF
-                    const imgWidth = 180; // Ancho fijo en el HTML/CSS
-                    const imgHeight = 50; // Alto fijo en el HTML/CSS
-                    // Usamos la posición izquierda del margen superior (margin, y)
-                    doc.addImage(img, 'PNG', margin, y - 5, imgWidth, imgHeight); 
+                if (img && img.complete) {
+                    // Usamos dimensiones para asegurar que no exceda el área
+                    const logoPDFWidth = 150; 
+                    const logoPDFHeight = 50; 
+                    
+                    // Solo si la imagen tiene fuente, la agregamos
+                    if (img.src) {
+                        // El formato PNG es más recomendado para logos sin fondo
+                        doc.addImage(img, 'PNG', margin, y, logoPDFWidth, logoPDFHeight); 
+                    }
                 }
 
                 doc.setFontSize(10);
@@ -303,7 +305,7 @@
                 y += 40; 
 
 
-                // 5. Tabla de Productos (usando jsPDF-AutoTable)
+                // 5. Tabla de Productos (usando doc.autoTable)
                 const tableHeaders = [
                     { header: 'CANT.', dataKey: 'cantidad' },
                     { header: 'DESCRIPCIÓN', dataKey: 'descripcion' },
@@ -401,17 +403,17 @@
                 const cliente = (document.getElementById('cliente-nombre')?.value || 'Cliente').trim().replace(/\s+/g,'-');
                 const fileName = `Cotizacion-${cotNum}-${cliente}.pdf`;
                 
-                // Ejecución de la descarga
                 doc.save(fileName); 
                 
-                // Esperar 100ms para que la descarga comience (previene el bloqueo del botón)
+                // Esperar 100ms para liberar el botón
                 await new Promise(resolve => setTimeout(resolve, 100)); 
 
             } catch (error) {
-                // Muestra un error en la consola si la generación falla
                 console.error("Error al generar o descargar el PDF:", error);
+                // Si la imagen no está cargada, la descarga fallará aquí.
+                alert("Error al generar el PDF. Verifica si la imagen 'logo tu quincalla.png' existe y se cargó correctamente.");
             } finally {
-                // Esto se ejecuta SIEMPRE 
+                // Esto se ejecuta SIEMPRE
                 btnDescargar.disabled = false;
                 btnDescargar.textContent = 'Descargar PDF';
             }
@@ -419,7 +421,18 @@
 
         btnDescargar.addEventListener('click', async () => {
             calcularTotales();
-            await descargarPDF();
+            // 🛑 TRUCO FINAL: Aseguramos que la imagen esté cargada antes de descargar
+            const img = document.getElementById('logo-web');
+            if (img.complete) {
+                await descargarPDF();
+            } else {
+                img.onload = () => descargarPDF();
+                img.onerror = () => {
+                    alert("Error: No se pudo cargar la imagen del logo. Revisa el nombre o la ruta.");
+                    btnDescargar.disabled = false;
+                    btnDescargar.textContent = 'Descargar PDF';
+                };
+            }
         });
 
         calcularTotales();
