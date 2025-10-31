@@ -50,10 +50,13 @@
         #tabla-items th{background:#f0f0f0; font-size: 14px;}
         #tabla-items input{width:100%;box-sizing:border-box;padding:4px;border:1px solid #ccd; font-size: 13px;} 
         .total-fila{font-weight:700;text-align:right}
+        
+        /* Márgenes base para la web */
         .totales{float:right;width:300px;margin-top:20px; font-size: 14px;}
+        .firmas{clear:both;margin-top:120px;display:flex;justify-content:space-between;text-align:center;color:#555; font-size: 14px;} 
+        
         .totales-item{display:flex;justify-content:space-between;padding:6px 0}
         .totales-item.total-general{border-top:2px solid #333;padding-top:10px;color:var(--azul);font-size:18px}
-        .firmas{clear:both;margin-top:120px;display:flex;justify-content:space-between;text-align:center;color:#555; font-size: 14px;} 
         .firmas div{width:45%}
         .firmas span{display:block;border-top:1px solid #999;margin-bottom:6px;padding-top:6px}
         .footer{clear:both;padding-top:36px;border-top:1px solid #eee;text-align:center;color:#777;font-size:11px}
@@ -63,28 +66,34 @@
             .cotizacion-container{box-shadow:none;border:none}
         }
 
-        /* 🛑 ESTILOS NUEVOS: Para la generación del PDF */
+        /* 🛑 ESTILOS PARA LA GENERACIÓN DEL PDF */
         body.generando-pdf .cotizacion-container {
-            /* Oculta el borde y sombra de la hoja para la captura */
             border: none;
             box-shadow: none;
         }
 
         body.generando-pdf input,
         body.generando-pdf textarea {
-            /* Oculta los bordes de los campos del formulario */
             border: none !important;
             background-color: transparent !important;
             box-shadow: none !important;
-            /* Asegura que el texto sea visible */
             color: #333 !important; 
-            /* Evita que se vea el control de 'resize' en textareas */
             resize: none;
         }
 
         body.generando-pdf .btn-peligro {
-            /* Oculta los botones de 'X' para eliminar filas */
             display: none !important;
+        }
+
+        /* 🚀 AJUSTE DE MÁRGENES SOLICITADO */
+        body.generando-pdf .totales {
+            /* Aumenta el espacio sobre los totales */
+            margin-top: 40px !important;
+        }
+
+        body.generando-pdf .firmas {
+            /* Aumenta considerablemente el espacio sobre las firmas */
+            margin-top: 180px !important;
         }
     </style>
 </head>
@@ -173,7 +182,9 @@
     </div>
     
     <script>
-        // Inicialización y manejo de la interfaz (sin cambios)
+        // --- JAVASCRIPT (Sin cambios) ---
+        
+        // Inicialización y manejo de la interfaz
         document.getElementById('fecha-hoy').valueAsDate = new Date();
         const $tablaBody = document.querySelector('#tabla-items tbody');
         const btnAgregar = document.getElementById('btnAgregar');
@@ -221,13 +232,12 @@
             document.getElementById('total-general').textContent = total.toFixed(2);
         }
 
-        // --- LÓGICA DE GENERACIÓN DE PDF (html2canvas) ---
-
+        // Lógica de Generación de PDF (html2canvas)
         async function descargarPDF() {
             btnDescargar.disabled = true;
             btnDescargar.textContent = 'Generando PDF...';
 
-            // 🛑 1. AÑADIMOS LA CLASE AL BODY
+            // 1. Añadimos la clase al body
             document.body.classList.add('generando-pdf');
 
             try {
@@ -247,13 +257,12 @@
                 const pdfWidth = doc.internal.pageSize.getWidth() - (margin * 2);
                 const pdfPageHeight = doc.internal.pageSize.getHeight() - (margin * 2);
 
-                // 5. Usar html2canvas para "capturar" el elemento (AHORA EN MODO LIMPIO)
+                // 5. Usar html2canvas
                 const canvas = await html2canvas(cotizacionElement, {
                     scale: 2, 
                     useCORS: true,
                     width: cotizacionElement.scrollWidth, 
                     height: cotizacionElement.scrollHeight,
-                    // Asegura que los fondos blancos se capturen (importante)
                     backgroundColor: '#ffffff'
                 });
 
@@ -285,7 +294,7 @@
                 console.error("Error al generar el PDF con html2canvas:", error);
                 alert("Hubo un error al generar el PDF. Revisa la consola para más detalles.");
             } finally {
-                // 🛑 8. QUITAMOS LA CLASE DEL BODY Y REESTABLECEMOS EL BOTÓN
+                // 8. Quitar la clase y reestablecer el botón
                 document.body.classList.remove('generando-pdf');
                 btnDescargar.disabled = false;
                 btnDescargar.textContent = 'Descargar PDF';
