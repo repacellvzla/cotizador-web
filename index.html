@@ -43,6 +43,8 @@
         .info-item label{width:100px;font-weight:600;margin-right:8px}
         .info-section .cot-data label {width: auto; min-width: 80px;} 
         .info-section .cot-data .info-item {justify-content: flex-end;} 
+        
+        /* Padding base de los inputs */
         .info-item input,.info-item textarea{flex:1;padding:4px 6px;border:1px solid #e6e6e6;border-radius:4px;font-size:13px}
         .info-item textarea{min-height:50px}
         table#tabla-items{width:100%;margin-top:24px;border-collapse:collapse; font-size: 13px;}
@@ -67,20 +69,41 @@
         }
 
         /* 🛑 ESTILOS PARA LA GENERACIÓN DEL PDF */
+        
         body.generando-pdf .cotizacion-container {
             border: none;
             box-shadow: none;
+            /* 🚀 CORRECCIÓN 2: Quitar min-height para evitar página extra */
+            min-height: 0 !important; 
         }
 
         body.generando-pdf input,
         body.generando-pdf textarea {
-            /* 🚀 CORRECCIÓN 1: Borde transparente para mantener alineación */
-            border: 1px solid transparent !important; 
+            border: none !important;
             background-color: transparent !important;
             box-shadow: none !important;
             color: #333 !important; 
             resize: none;
+            
+            /* 🚀 CORRECCIÓN 1: Compensar el padding del borde quitado */
+            /* Se basa en el padding original (4px) + 1px del borde */
+            padding-top: 5px !important;
+            padding-bottom: 5px !important;
         }
+
+        /* Ajuste específico para los inputs de la info (que tenían 6px horizontal) */
+        body.generando-pdf .info-item input,
+        body.generando-pdf .info-item textarea {
+            padding-left: 6px !important;
+            padding-right: 6px !important;
+        }
+        
+        /* Ajuste específico para los inputs de la tabla (que tenían 4px horizontal) */
+        body.generando-pdf #tabla-items input {
+            padding-left: 4px !important;
+            padding-right: 4px !important;
+        }
+
 
         body.generando-pdf .btn-peligro {
             display: none !important;
@@ -91,8 +114,8 @@
         }
 
         body.generando-pdf .firmas {
-            /* 🚀 CORRECCIÓN 2: Doble margen para sellos y firmas */
-            margin-top: 360px !important;
+            /* 🚀 CORRECCIÓN 2: Margen grande pero ajustado para una página */
+            margin-top: 280px !important;
         }
     </style>
 </head>
