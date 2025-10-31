@@ -31,11 +31,10 @@
         }
         
         .header table{width:100%}
-        #logo-web{max-width:120px; height:auto; display:block;} /* Logo 120px */
+        #logo-web{max-width:120px; height:auto; display:block;}
         .empresa-info{text-align:right}
         .header h1{color:var(--azul);margin:0 0 6px;font-size:26px}
         
-        /* Estilos base de la sección de info */
         .info-section{display:flex;gap:30px;margin-top:24px}
         .info-section > div{flex:1; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px;} 
         .info-section h3{margin-top:0; border-bottom: 2px solid var(--azul); padding-bottom: 4px; font-size: 16px; margin-bottom: 12px;}
@@ -44,9 +43,9 @@
         .info-section .cot-data label {width: auto; min-width: 80px;} 
         .info-section .cot-data .info-item {justify-content: flex-end;} 
         
-        /* Padding base de inputs */
-        .info-item input,.info-item textarea{flex:1;padding:4px 6px;border:1px solid #e6e6e6;border-radius:4px;font-size:13px}
-        .info-item textarea{min-height:50px}
+        .info-item input{padding:4px 6px;border:1px solid #e6e6e6;border-radius:4px;font-size:13px}
+        /* El textarea tiene una altura mínima en la web */
+        .info-item textarea{flex:1;padding:4px 6px;border:1px solid #e6e6e6;border-radius:4px;font-size:13px; min-height:50px;}
         
         table#tabla-items{width:100%;margin-top:24px;border-collapse:collapse; font-size: 13px;}
         #tabla-items th,#tabla-items td{border:1px solid #e6e6e6;padding:8px;text-align:left} 
@@ -81,31 +80,36 @@
 
         /* 🚀 CORRECCIÓN: Quitar cajas y reducir espacio en Info Cliente/Cotización */
         body.generando-pdf .info-section {
-            gap: 20px !important; /* Mantiene un espacio entre las dos columnas */
+            gap: 20px !important; 
             margin-top: 20px !important;
         }
         body.generando-pdf .info-section > div {
             border: none !important;
-            padding: 0 !important; /* Quita el padding de la caja */
+            padding: 0 !important; 
         }
         body.generando-pdf .info-section h3 {
-             margin-bottom: 8px !important; /* Reduce espacio bajo el título (CLIENTE) */
+             margin-bottom: 8px !important; 
         }
         body.generando-pdf .info-item {
-             margin-bottom: 2px !important; /* Reduce espacio entre líneas (Nombres:, RIF/CI:, etc) */
+             margin-bottom: 2px !important; 
         }
 
-        /* 🚀 CORRECCIÓN: Evitar texto cortado en inputs */
+        /* 🚀 CORRECCIÓN: Evitar texto cortado y arreglar gap de 'Dirección' */
         body.generando-pdf input,
         body.generando-pdf textarea {
-            border: none !important; /* Quita el borde */
+            border: none !important; /* Quita el borde visual */
             background-color: transparent !important;
             box-shadow: none !important;
             color: #333 !important; 
             resize: none;
-            /* Compensar 1px de borde con 1px de padding */
+            
+            /* 1. Arregla el texto cortado (4px original + 1px por el borde quitado) */
             padding-top: 5px !important; 
             padding-bottom: 5px !important;
+
+            /* 2. Arregla el gap de 'Dirección' (forzando altura de 1 línea) */
+            height: auto !important; 
+            min-height: 0 !important;
         }
 
         /* Re-aplicar padding horizontal original */
@@ -124,7 +128,7 @@
             display: none !important;
         }
         
-        /* 🚀 CORRECCIÓN: Compactar tabla */
+        /* Compactar tabla */
         body.generando-pdf #tabla-items th,
         body.generando-pdf #tabla-items td {
             padding-top: 4px !important;
@@ -138,29 +142,23 @@
         }
 
         /* Redistribuir el ancho de las columnas */
-        body.generando-pdf #tabla-items th:nth-child(1), /* CANT. */
-        body.generando-pdf #tabla-items td:nth-child(1) {
-            width: 10% !important; 
-        }
-        body.generando-pdf #tabla-items th:nth-child(2), /* DESCRIPCIÓN */
-        body.generando-pdf #tabla-items td:nth-child(2) {
-            width: 60% !important; /* Más espacio */
-        }
-        body.generando-pdf #tabla-items th:nth-child(3), /* P. UNITARIO */
-        body.generando-pdf #tabla-items td:nth-child(3) {
-            width: 15% !important;
-        }
-        body.generando-pdf #tabla-items th:nth-child(4), /* TOTAL */
-        body.generando-pdf #tabla-items td:nth-child(4) {
-            width: 15% !important;
-        }
+        body.generando-pdf #tabla-items th:nth-child(1) { width: 10% !important; }
+        body.generando-pdf #tabla-items td:nth-child(1) { width: 10% !important; }
+        body.generando-pdf #tabla-items th:nth-child(2) { width: 60% !important; }
+        body.generando-pdf #tabla-items td:nth-child(2) { width: 60% !important; }
+        body.generando-pdf #tabla-items th:nth-child(3) { width: 15% !important; }
+        body.generando-pdf #tabla-items td:nth-child(3) { width: 15% !important; }
+        body.generando-pdf #tabla-items th:nth-child(4) { width: 15% !important; }
+        body.generando-pdf #tabla-items td:nth-child(4) { width: 15% !important; }
+
 
         body.generando-pdf .totales {
             margin-top: 20px !important; 
         }
 
+        /* 🚀 CORRECCIÓN: Margen obligatorio para sellos y firmas */
         body.generando-pdf .firmas {
-            margin-top: 100px !important; /* Espacio para firmas sin saltar página */
+            margin-top: 240px !important; /* Más del doble del original (120px) */
         }
 
         body.generando-pdf .footer {
