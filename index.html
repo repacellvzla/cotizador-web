@@ -9,7 +9,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <style>
-        /* Estilos CSS (Sin cambios) */
+        /* Estilos CSS */
         :root{--azul:#007bff;--gris:#f4f7f6;--border-color:#ccc}
         body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--gris);margin:0;padding:20px;color:#333}
         
@@ -31,9 +31,10 @@
             box-sizing:border-box
         }
         
-        /* Resto de estilos (sin cambios) */
         .header table{width:100%}
+        /* 🚀 CORRECCIÓN: Tamaño de logo ajustado */
         #logo-web{max-width:120px; height:auto; display:block;}
+
         .empresa-info{text-align:right}
         .header h1{color:var(--azul);margin:0 0 6px;font-size:26px}
         .info-section{display:flex;gap:30px;margin-top:24px}
@@ -48,13 +49,11 @@
         .info-item textarea{min-height:50px}
         
         table#tabla-items{width:100%;margin-top:24px;border-collapse:collapse; font-size: 13px;}
-        /* Padding original de la tabla */
         #tabla-items th,#tabla-items td{border:1px solid #e6e6e6;padding:8px;text-align:left} 
         #tabla-items th{background:#f0f0f0; font-size: 14px;}
         #tabla-items input{width:100%;box-sizing:border-box;padding:4px;border:1px solid #ccd; font-size: 13px;} 
         .total-fila{font-weight:700;text-align:right}
         
-        /* Márgenes base para la web */
         .totales{float:right;width:300px;margin-top:20px; font-size: 14px;}
         .firmas{clear:both;margin-top:120px;display:flex;justify-content:space-between;text-align:center;color:#555; font-size: 14px;} 
         
@@ -69,24 +68,27 @@
             .cotizacion-container{box-shadow:none;border:none}
         }
 
-        /* 🛑 ESTILOS PARA LA GENERACIÓN DEL PDF */
+        /* =============================================
+        🛑 ESTILOS PARA LA GENERACIÓN DEL PDF
+        =============================================
+        */
         
         body.generando-pdf .cotizacion-container {
             border: none;
             box-shadow: none;
-            /* 🚀 CORRECCIÓN 2: Evitar la altura mínima de 11in */
+            /* 🚀 CORRECCIÓN: Evitar la altura mínima de 11in para que quepa en 1 pág */
             min-height: 0 !important; 
         }
 
         body.generando-pdf input,
         body.generando-pdf textarea {
-            /* 🚀 CORRECCIÓN 1: Usar borde transparente para mantener la altura y alineación */
+            /* 🚀 CORRECCIÓN: Usar borde transparente para mantener la altura y alineación del texto */
             border: 1px solid transparent !important; 
             background-color: transparent !important;
             box-shadow: none !important;
             color: #333 !important; 
             resize: none;
-            /* Asegura que el padding vertical se mantenga */
+            /* Asegura que el padding original se mantenga */
             padding-top: 4px !important;
             padding-bottom: 4px !important;
         }
@@ -102,20 +104,53 @@
             display: none !important;
         }
         
-        /* 🚀 CORRECCIÓN 2: Reducir padding de la tabla para que quepan más filas */
+        /* 🚀 CORRECCIÓN: Compactar verticalmente las secciones */
+        body.generando-pdf .info-item {
+            margin-bottom: 2px !important; /* Reduce espacio entre líneas de cliente */
+        }
+
+        /* 🚀 CORRECCIÓN: Compactar la tabla para que quepan más productos */
         body.generando-pdf #tabla-items th,
         body.generando-pdf #tabla-items td {
             padding-top: 4px !important;
             padding-bottom: 4px !important;
         }
 
+        /* 🚀 CORRECCIÓN: Ocultar la última columna (la del botón 'X') */
+        body.generando-pdf #tabla-items th:last-child,
+        body.generando-pdf #tabla-items td:last-child {
+            display: none !important;
+        }
+
+        /* 🚀 CORRECCIÓN: Redistribuir el ancho de las columnas restantes */
+        body.generando-pdf #tabla-items th:nth-child(1), /* CANT. */
+        body.generando-pdf #tabla-items td:nth-child(1) {
+            width: 10% !important; 
+        }
+        body.generando-pdf #tabla-items th:nth-child(2), /* DESCRIPCIÓN */
+        body.generando-pdf #tabla-items td:nth-child(2) {
+            width: 60% !important; /* Más espacio para descripción */
+        }
+        body.generando-pdf #tabla-items th:nth-child(3), /* P. UNITARIO */
+        body.generando-pdf #tabla-items td:nth-child(3) {
+            width: 15% !important;
+        }
+        body.generando-pdf #tabla-items th:nth-child(4), /* TOTAL */
+        body.generando-pdf #tabla-items td:nth-child(4) {
+            width: 15% !important;
+        }
+
         body.generando-pdf .totales {
-            margin-top: 20px !important; /* Margen reducido */
+            margin-top: 20px !important; /* Margen normal */
         }
 
         body.generando-pdf .firmas {
-            /* 🚀 CORRECCIÓN 2: Margen grande, pero no tan grande como para saltar de página */
-            margin-top: 160px !important; /* (Original era 120px) */
+            /* Margen suficiente para firmas pero sin saltar de página */
+            margin-top: 100px !important; 
+        }
+
+        body.generando-pdf .footer {
+            padding-top: 20px !important;
         }
     </style>
 </head>
@@ -129,7 +164,7 @@
         <header class="header">
             <table>
                 <tr>
-                    <td style="width:120px;vertical-align:top;">
+                    <td style="width:200px;vertical-align:top;">
                         <img id="logo-web" src="logo tu quincalla.png" alt="Logo La Quincalla de Mauriel">
                     </td>
                     <td style="vertical-align:top;">
@@ -298,6 +333,7 @@
                 doc.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
                 heightLeft -= pdfPageHeight;
 
+                // Si heightLeft > 0, significa que el contenido es más largo que una página
                 while (heightLeft > 0) {
                     position = margin - heightLeft;
                     doc.addPage();
