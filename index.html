@@ -391,12 +391,15 @@
                 
                 // Ejecución de la descarga
                 doc.save(fileName); 
+                
+                // 🛑 CORRECCIÓN CLAVE: Esperar 100ms para que la descarga comience
+                await new Promise(resolve => setTimeout(resolve, 100)); 
 
             } catch (error) {
                 // Muestra un error en la consola si la generación falla
                 console.error("Error al generar o descargar el PDF:", error);
             } finally {
-                // Esto se ejecuta SIEMPRE (haya éxito o error)
+                // Esto se ejecuta SIEMPRE (haya éxito o error), después de la pausa asíncrona
                 btnDescargar.disabled = false;
                 btnDescargar.textContent = 'Descargar PDF';
             }
